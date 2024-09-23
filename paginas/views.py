@@ -1,6 +1,7 @@
 from django.http import HttpResponse
-from django.shortcuts import render # se agregó para llamar las paginas web del template
-from paginas.models import Flan
+from django.shortcuts import render, redirect # se agregó para llamar las paginas web del template
+from paginas.models import Flan, Contact
+from paginas.forms import ContactForm
 
 def home(request):
     flanes_publicos = Flan.objects.filter(is_private=False)
@@ -19,7 +20,24 @@ def welcome(request):
 def about(request):
     return render(request, 'about.html')
 
+
 def contact(request):
-    return render(request, 'contact.html')
+    if request.method == 'GET':
+        form = ContactForm()
+        context = {'form': form}
+        return render (request, 'contact.html', context)
+    else:
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            Contact.objects.create(
+                **form.cleaned_data
+            )
+            return redirect('/success')
+        context = { 'form': form}
+        return render(request, 'contact.html', context)    
+        
+def success(request):
+    return render(request, 'success.html')
+
 
 
